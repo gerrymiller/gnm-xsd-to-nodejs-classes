@@ -1,7 +1,8 @@
 'use strict';
 
-const { expect } = require('chai');
-const CONST =  require('../../const');
+const { expect } = require('chai')
+    , CONST =  require('../../const')
+    , app   =  require('../../index');
 
 describe('Test the entire library', async () => {
     const currentNodeEnv = process.env.NODE_ENV;
@@ -23,5 +24,8 @@ describe('Test the entire library', async () => {
     });
 
     it('reads an xsd', async () => {
+        app.processSchema({
+            schemaFile: `${__dirname}/test.xsd`
+        });
     });
 });

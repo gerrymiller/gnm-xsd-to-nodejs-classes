@@ -19,7 +19,11 @@ const CONST = require('./const')
 /**
  * Utilities module
  */
-    , util   = require('./util');
+    , util   = require('./util')
+/**
+ * For reading an XSD file
+ */
+    , fs     = require('fs');
 
 
 /**
@@ -36,28 +40,39 @@ module.exports = {
      */
     processSchema : async function( options ) {
         // Read the XML schema from either a URL or specified file 
-        let xmlStr;
+        let xmlString;
 
         if(options.hasOwnProperty('schemaURL') && !util.isEmptyString(options.schemaURL)) {
             // TODO: read schema from URL
         }
 
         if(options.hasOwnProperty('schemaFile') && !util.isEmptyString(options.schemaFile)) {
-            if(!util.isEmptyString(xmlStr)) {                
+            if(!util.isEmptyString(xmlString)) {
                 throw "Cannot specify both schemaURL and schemaFile";
             }
-            // TODO: read schema from File
+            console.log(options.schemaFile);
+            xmlString = fs.readFileSync(options.schemaFile, {encoding:'utf8', flag:'r'});
         }
 
-        if(util.isEmptyString(xmlStr)) {
+        if(util.isEmptyString(xmlString)) {
             throw "Must specify either schemaURL or schemaFile";
         }
 
-        const expr = xpath.useNamespaces({
-            "xs": CONST.XML_SCHEMA_NS
-        });
-
         let doc = new dom().parseFromString(xmlString);
+        let result = xpath.evaluate(
+            "/",
+            doc,
+            null,
+            xpath.XPathResult.ANY_TYPE,
+            null
+        );
+
+        let node = result.iterateNext();
+        while(node) {
+            console.log(`${node.localname}: ${node.firstChild.data}`);
+            console.log(`Node: ${node.toString()}`);
+            node = result.iterateNext();
+        }
 
         return true;
     }

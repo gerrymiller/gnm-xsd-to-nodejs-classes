@@ -12,7 +12,7 @@ module.exports = {
      */
     isEmptyString : (x) => {
         return (
-            (typeof x != 'String')
+            (typeof x != 'string')
                         ||
             (x == null)
                         ||

@@ -1,0 +1,22 @@
+{
+  "name": "gnm-xsd-to-nodejs-classes",
+  "version": "0.0.1",
+  "description": "Creates node.js classes from XSD schema file(s)",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha tests/unit/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gerrymiller/gnm-xsd-to-nodejs-classes.git"
+  },
+  "keywords": [
+    "xsd"
+  ],
+  "author": "Gerry Miller <gerry@gerrymiller.com>",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/gerrymiller/gnm-xsd-to-nodejs-classes/issues"
+  },
+  "homepage": "https://github.com/gerrymiller/gnm-xsd-to-nodejs-classes#readme"
+}

@@ -25,5 +25,8 @@
     "gulp-mocha": "^7.0.2",
     "mocha": "^8.0.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "xmldom": "^0.3.0",
+    "xpath": "0.0.27"
+  }
 }

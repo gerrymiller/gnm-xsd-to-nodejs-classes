@@ -30,6 +30,7 @@ const CONST = require('./const')
  * @typedef {Object} processSchema~options
  * @property {string} schemaURL - optional URL to the XSD (cannot be specified with schemaFile - one must be specified)
  * @property {string} schemaFile - optional Filename of the XSD (cannot be specified with schemaURL - one must be specified)
+ * @property {Object} namespaces - optional Object containing additional namespaces with prefixes to be expected in the XSD
  */
 
 module.exports = {
@@ -42,11 +43,11 @@ module.exports = {
         // Read the XML schema from either a URL or specified file 
         let xmlString;
 
-        if(options.hasOwnProperty('schemaURL') && !util.isEmptyString(options.schemaURL)) {
+        if(!util.isEmptyString(options['schemaURL'])) {
             // TODO: read schema from URL
         }
 
-        if(options.hasOwnProperty('schemaFile') && !util.isEmptyString(options.schemaFile)) {
+        if(!util.isEmptyString(options['schemaFile'])) {
             if(!util.isEmptyString(xmlString)) {
                 throw "Cannot specify both schemaURL and schemaFile";
             }
@@ -58,18 +59,24 @@ module.exports = {
             throw "Must specify either schemaURL or schemaFile";
         }
 
+        let ns = options.namespaces || {};
+        ns.xs = CONST.XML_SCHEMA_NS;
+
         let doc = new dom().parseFromString(xmlString);
         let result = xpath.evaluate(
-            "/",
+            "/xs:schema/xs:element",
             doc,
-            null,
+            {
+                lookupNamespaceURI: (prefix) => {
+                    return ns[prefix] || null;
+                }
+            },
             xpath.XPathResult.ANY_TYPE,
             null
         );
 
         let node = result.iterateNext();
         while(node) {
-            console.log(`${node.localname}: ${node.firstChild.data}`);
             console.log(`Node: ${node.toString()}`);
             node = result.iterateNext();
         }

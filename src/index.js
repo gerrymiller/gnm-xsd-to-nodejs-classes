@@ -4,6 +4,8 @@
 
 'use strict';
 
+const { start } = require('repl');
+
 /**
  * Reference to the CONSTANTS module
  */
@@ -56,7 +58,6 @@ module.exports = {
             if(!util.isEmptyString(xmlString)) {
                 throw "Cannot specify both schemaURL and schemaFile";
             }
-            console.log(options.schemaFile);
             xmlString = fs.readFileSync(options.schemaFile, {encoding:'utf8', flag:'r'});
         }
 
@@ -80,12 +81,51 @@ module.exports = {
             null
         );
 
+        let classes = {};
         let node = result.iterateNext();
         while(node) {
-            console.log(`Node: ${node.toString()}`);
+            // Get the node's "name" attribute
+            let name = node.getAttribute("name");
+            let type = util.stripXMLNamespace(node.getAttribute("type"));
+            if(util.isEmptyString(type)) {
+                // TODO: iterate over complex type and create an object (recursive)
+                type = parseComplexType(node, []);
+            }
+            classes[name] = {
+                "type" : type
+            };
+
+            // See if it has a "type" attribute
+
             node = result.iterateNext();
         }
 
+        console.log(classes);
+
         return true;
     }
+}
+
+function parseComplexType(startingNode, arr) {
+    // TODO: make iterative and use XPath
+    for(let i = 0; i < startingNode.childNodes.length; i++) {
+        let node = startingNode.childNodes[i];
+        if("complexType" === node.localName) {
+            for(let j = 0; j < node.childNodes.length; j++) {
+                let seqNode = node.childNodes[j];
+                if("sequence" === seqNode.localName) {
+                    for(let k = 0; k < seqNode.childNodes.length; k++) {
+                        let element = seqNode.childNodes[k];
+                        if("element" === element.localName) {
+                            let ref = element.getAttribute("ref");
+                            if(!util.isEmptyString(ref)) {
+                                arr.push(ref);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return arr;
 }

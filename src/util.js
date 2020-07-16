@@ -28,5 +28,14 @@ module.exports = {
                         ||
             (/^\s*$/.test(x))
         );
+    },
+
+    /**
+     * Returns a string with the XML namespace stripped off
+     * @param {String} x - a (presumably) non-empty String
+     * @returns {String} - x without any XML namespace prefix
+     */
+    stripXMLNamespace : (x) => {
+        return x.substr(x.lastIndexOf(":") + 1);
     }
 };

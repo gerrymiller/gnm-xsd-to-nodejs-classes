@@ -7,6 +7,15 @@
 
 module.exports = {
     /**
+     * Contains zero or more of the following attributes:
+     * - facets: an array of zero or more constraints allowed for the data type
+     * - legalLiterals: an array of zero or more allowable values for the data 
+     *   type
+     * - baseType: the name of the data types base type
+     * - itemType: if specified, the data type is a collection of itemTypes
+     */    
+
+    /**
      * Primitive datatypes
      */
 
@@ -1162,79 +1171,622 @@ module.exports = {
     /**
      * Derived datatypes
      */
+
+    /**
+     * normalizedString represents white space normalized strings. The value 
+     * space of normalizedString is the set of strings that do not contain the 
+     * carriage return (#xD), line feed (#xA) nor tab (#x9) characters. The 
+     * lexical space of normalizedString is the set of strings that do not 
+     * contain the carriage return (#xD), line feed (#xA) nor tab (#x9) 
+     * characters. The base type of normalizedString is string.
+     */
     "normalizedString" : {
-        "parent" : "string"
+        "baseType" : "string",
+        "facets" : [
+            "length",
+            "minLength",
+            "maxLength",
+            "pattern",
+            "enumeration",
+            "whiteSpace"
+        ]
     },
+    /**
+     * token represents tokenized strings. The value space of token is the set 
+     * of strings that do not contain the carriage return (#xD), line feed 
+     * (#xA) nor tab (#x9) characters, that have no leading or trailing spaces 
+     * (#x20) and that have no internal sequences of two or more spaces. The 
+     * lexical space of token is the set of strings that do not contain the 
+     * carriage return (#xD), line feed (#xA) nor tab (#x9) characters, that 
+     * have no leading or trailing spaces (#x20) and that have no internal 
+     * sequences of two or more spaces. The base type of token is 
+     * normalizedString.
+     */
     "token" : {
-
+        "baseType" : "normalizedString",
+        "facets" : [
+            "length",
+            "minLength",
+            "maxLength",
+            "pattern",
+            "enumeration",
+            "whiteSpace"
+        ]
     },
+    /**
+     * language represents natural language identifiers as defined by by [RFC 
+     * 3066]. The value space of language is the set of all strings that are 
+     * valid language identifiers as defined [RFC 3066]. The lexical space of 
+     * language is the set of all strings that conform to the pattern 
+     * [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*. The base type of language is token.
+     */
     "language" : {
-
+        "baseType" : "token",
+        "facets" : [
+            "length",
+            "minLength",
+            "maxLength",
+            "pattern",
+            "enumeration",
+            "whiteSpace"
+        ]
     },
+    /**
+     * NMTOKEN represents the NMTOKEN attribute type from [XML 1.0 (Second 
+     * Edition)]. The value space of NMTOKEN is the set of tokens that match 
+     * the Nmtoken production in [XML 1.0 (Second Edition)]. The lexical space 
+     * of NMTOKEN is the set of strings that match the Nmtoken production in 
+     * [XML 1.0 (Second Edition)]. The base type of NMTOKEN is token.
+     * 
+     * For compatibility (see Terminology (§1.4)) NMTOKEN should be used only 
+     * on attributes.
+     */
     "NMTOKEN" : {
-
+        "baseType" : "token",
+        "facets" : [
+            "length",
+            "minLength",
+            "maxLength",
+            "pattern",
+            "enumeration",
+            "whiteSpace"
+        ]
     },
+    /**
+     * NMTOKENS represents the NMTOKENS attribute type from [XML 1.0 (Second 
+     * Edition)]. The value space of NMTOKENS is the set of finite, non-zero-
+     * length sequences of NMTOKENs. The lexical space of NMTOKENS is the set
+     * of space-separated lists of tokens, of which each token is in the 
+     * lexical space of NMTOKEN. The itemType of NMTOKENS is NMTOKEN.
+     * 
+     * For compatibility (see Terminology (§1.4)) NMTOKENS should be used only 
+     * on attributes.
+     */
     "NMTOKENS" : {
-
+        "itemType" : "NMTOKEN",
+        "facets" : [
+            "length",
+            "minLength",
+            "maxLength",
+            "pattern",
+            "enumeration",
+            "whiteSpace"
+        ]
     },
+    /**
+     * Name represents XML Names. The value space of Name is the set of all 
+     * strings which match the Name production of [XML 1.0 (Second Edition)]. 
+     * The lexical space of Name is the set of all strings which match the Name 
+     * production of [XML 1.0 (Second Edition)]. The base type of Name is 
+     * token.
+     */
     "Name" : {
-
+        "baseType" : "token",
+        "facets" : [
+            "length",
+            "minLength",
+            "maxLength",
+            "pattern",
+            "enumeration",
+            "whiteSpace"
+        ]
     },
+    /**
+     * NCName represents XML "non-colonized" Names. The value space of NCName 
+     * is the set of all strings which match the NCName production of 
+     * [Namespaces in XML]. The lexical space of NCName is the set of all 
+     * strings which match the NCName production of [Namespaces in XML]. The 
+     * base type of NCName is Name.
+     */
     "NCName" : {
-
+        "baseType" : "Name",
+        "facets" : [
+            "length",
+            "minLength",
+            "maxLength",
+            "pattern",
+            "enumeration",
+            "whiteSpace"
+        ]
     },
+    /**
+     * ID represents the ID attribute type from [XML 1.0 (Second Edition)]. The
+     * value space of ID is the set of all strings that match the NCName 
+     * production in [Namespaces in XML]. The lexical space of ID is the set of
+     * all strings that match the NCName production in [Namespaces in XML]. The
+     * base type of ID is NCName.
+     * 
+     * For compatibility (see Terminology (§1.4)) ID should be used only on 
+     * attributes.
+     */
     "ID" : {
-
+        "baseType" : "NCName",
+        "facets" : [
+            "length",
+            "minLength",
+            "maxLength",
+            "pattern",
+            "enumeration",
+            "whiteSpace"
+        ]
     },
+    /**
+     * IDREF represents the IDREF attribute type from [XML 1.0 (Second 
+     * Edition)]. The value space of IDREF is the set of all strings that match
+     * the NCName production in [Namespaces in XML]. The lexical space of IDREF
+     * is the set of strings that match the NCName production in [Namespaces in
+     * XML]. The base type of IDREF is NCName.
+     * 
+     * For compatibility (see Terminology (§1.4)) this datatype should be used
+     * only on attributes.
+     */
     "IDREF" : {
-
+        "baseType" : "NCName",
+        "facets" : [
+            "length",
+            "minLength",
+            "maxLength",
+            "pattern",
+            "enumeration",
+            "whiteSpace"
+        ]
     },
+    /**
+     * IDREFS represents the IDREFS attribute type from [XML 1.0 (Second 
+     * Edition)]. The value space of IDREFS is the set of finite, non-zero-
+     * length sequences of IDREFs. The lexical space of IDREFS is the set of
+     * space-separated lists of tokens, of which each token is in the lexical
+     * space of IDREF. The itemType of IDREFS is IDREF.
+     * 
+     * For compatibility (see Terminology (§1.4)) IDREFS should be used only on
+     * attributes.
+     */
     "IDREFS" : {
-
+        "itemType" : "IDREF",
+        "facets" : [
+            "length",
+            "minLength",
+            "maxLength",
+            "pattern",
+            "enumeration",
+            "whiteSpace"
+        ]
     },
+    /**
+     * ENTITY represents the ENTITY attribute type from [XML 1.0 (Second 
+     * Edition)]. The value space of ENTITY is the set of all strings that
+     * match the NCName production in [Namespaces in XML] and have been 
+     * declared as an unparsed entity in a document type definition. The 
+     * lexical space of ENTITY is the set of all strings that match the NCName
+     * production in [Namespaces in XML]. The base type of ENTITY is NCName.
+     * 
+     *      Note: The value space of ENTITY is scoped to a specific instance 
+     *      document.
+     * 
+     * For compatibility (see Terminology (§1.4)) ENTITY should be used only on
+     * attributes.
+     */
     "ENTITY" : {
-
+        "baseType" : "NCName",
+        "facets" : [
+            "length",
+            "minLength",
+            "maxLength",
+            "pattern",
+            "enumeration",
+            "whiteSpace"
+        ]
     },
+    /**
+     * ENTITIES represents the ENTITIES attribute type from [XML 1.0 (Second 
+     * Edition)]. The value space of ENTITIES is the set of finite, non-zero-
+     * length sequences of ENTITYs that have been declared as unparsed entities
+     * in a document type definition. The lexical space of ENTITIES is the set
+     * of space-separated lists of tokens, of which each token is in the 
+     * lexical space of ENTITY. The itemType of ENTITIES is ENTITY.
+     * 
+     *      Note:  The value space of ENTITIES is scoped to a specific instance
+     *      document.
+     * 
+     * For compatibility (see Terminology (§1.4)) ENTITIES should be used only
+     * on attributes.
+     */
     "ENTITIES" : {
-
+        "itemType" : "ENTITY",
+        "facets" : [
+            "length",
+            "minLength",
+            "maxLength",
+            "pattern",
+            "enumeration",
+            "whiteSpace"
+        ]
     },
+    /**
+     * integer is derived from decimal by fixing the value of fractionDigits to
+     * be 0 and disallowing the trailing decimal point. This results in the
+     * standard mathematical concept of the integer numbers. The value space of
+     * integer is the infinite set {...,-2,-1,0,1,2,...}. The base type of
+     * integer is decimal.
+     * 
+     * integer has a lexical representation consisting of a finite-length
+     * sequence of decimal digits (#x30-#x39) with an optional leading sign. If
+     * the sign is omitted, "+" is assumed. For example: -1, 0, 12678967543233,
+     * +100000.
+     * 
+     * The canonical representation for integer is defined by prohibiting
+     * certain options from the Lexical representation (§3.3.13.1).
+     * Specifically, the preceding optional "+" sign is prohibited and leading
+     * zeroes are prohibited.
+     */
     "integer" : {
-
+        "baseType" : "decimal",
+        "facets" : [
+            "totalDigits",
+            "fractionDigits",
+            "pattern",
+            "whiteSpace",
+            "enumeration",
+            "maxInclusive",
+            "maxExclusive",
+            "minInclusive",
+            "minExclusive"
+        ]
     },
+    /**
+     * nonPositiveInteger is derived from integer by setting the value of
+     * maxInclusive to be 0. This results in the standard mathematical concept
+     * of the non-positive integers. The value space of nonPositiveInteger is
+     * the infinite set {...,-2,-1,0}. The base type of nonPositiveInteger is
+     * integer.
+     * 
+     * nonPositiveInteger has a lexical representation consisting of an
+     * optional preceding sign followed by a finite-length sequence of decimal
+     * digits (#x30-#x39). The sign may be "+" or may be omitted only for
+     * lexical forms denoting zero; in all other lexical forms, the negative
+     * sign ("-") must be present. For example: -1, 0, -12678967543233, 
+     * -100000.
+     * 
+     * The canonical representation for nonPositiveInteger is defined by
+     * prohibiting certain options from the Lexical representation (§3.3.14.1).
+     * In the canonical form for zero, the sign must be omitted. Leading zeroes
+     * are prohibited.
+     */
     "nonPositiveInteger" : {
-
+        "baseType" : "integer",
+        "facets" : [
+            "totalDigits",
+            "fractionDigits",
+            "pattern",
+            "whiteSpace",
+            "enumeration",
+            "maxInclusive",
+            "maxExclusive",
+            "minInclusive",
+            "minExclusive"
+        ]
     },
+    /**
+     * negativeInteger is derived from nonPositiveInteger by setting the value
+     * of maxInclusive to be -1. This results in the standard mathematical
+     * concept of the negative integers. The value space of negativeInteger is
+     * the infinite set {...,-2,-1}. The ·base type· of negativeInteger is
+     * nonPositiveInteger.
+     * 
+     * negativeInteger has a lexical representation consisting of a negative
+     * sign ("-") followed by a finite-length sequence of decimal digits
+     * (#x30-#x39). For example: -1, -12678967543233, -100000.
+     * 
+     * The canonical representation for negativeInteger is defined by
+     * prohibiting certain options from the Lexical representation (§3.3.15.1).
+     * Specifically, leading zeroes are prohibited.
+     */
     "negativeInteger" : {
-
+        "baseType" : "nonPositiveInteger",
+        "facets" : [
+            "totalDigits",
+            "fractionDigits",
+            "pattern",
+            "whiteSpace",
+            "enumeration",
+            "maxInclusive",
+            "maxExclusive",
+            "minInclusive",
+            "minExclusive"
+        ]
     },
+    /**
+     * long is derived from integer by setting the value of maxInclusive to be
+     * 9223372036854775807 and minInclusive to be -9223372036854775808. The
+     * base type of long is integer.
+     * 
+     * long has a lexical representation consisting of an optional sign
+     * followed by a finite-length sequence of decimal digits (#x30-#x39). If
+     * the sign is omitted, "+" is assumed. For example: -1, 0, 12678967543233,
+     * +100000.
+     * 
+     * The canonical representation for long is defined by prohibiting certain
+     * options from the Lexical representation (§3.3.16.1). Specifically, the
+     * optional "+" sign is prohibited and leading zeroes are prohibited.
+     */
     "long" : {
-
+        "baseType" : "integer",
+        "facets" : [
+            "totalDigits",
+            "fractionDigits",
+            "pattern",
+            "whiteSpace",
+            "enumeration",
+            "maxInclusive",
+            "maxExclusive",
+            "minInclusive",
+            "minExclusive"
+        ]
     },
+    /**
+     * int is derived from long by setting the value of maxInclusive to be
+     * 2147483647 and minInclusive to be -2147483648. The base type of int is
+     * long.
+     * 
+     * int has a lexical representation consisting of an optional sign followed
+     * by a finite-length sequence of decimal digits (#x30-#x39). If the sign
+     * is omitted, "+" is assumed. For example: -1, 0, 126789675, +100000.
+     * 
+     * The canonical representation for int is defined by prohibiting certain
+     * options from the Lexical representation (§3.3.17.1). Specifically, the
+     * optional "+" sign is prohibited and leading zeroes are prohibited.
+     */
     "int" : {
-
+        "baseType" : "long",
+        "facets" : [
+            "totalDigits",
+            "fractionDigits",
+            "pattern",
+            "whiteSpace",
+            "enumeration",
+            "maxInclusive",
+            "maxExclusive",
+            "minInclusive",
+            "minExclusive"
+        ]
     },
+    /**
+     * short is derived from int by setting the value of maxInclusive to be
+     * 32767 and minInclusive to be -32768. The ·base type· of short is int.
+     * 
+     * short has a lexical representation consisting of an optional sign
+     * followed by a finite-length sequence of decimal digits (#x30-#x39). If
+     * the sign is omitted, "+" is assumed. For example: -1, 0, 12678, +10000.
+     * 
+     * The canonical representation for short is defined by prohibiting certain
+     * options from the Lexical representation (§3.3.18.1). Specifically, the 
+     * optional "+" sign is prohibited and leading zeroes are prohibited.
+     */
     "short" : {
-
+        "baseType" : "int",
+        "facets" : [
+            "totalDigits",
+            "fractionDigits",
+            "pattern",
+            "whiteSpace",
+            "enumeration",
+            "maxInclusive",
+            "maxExclusive",
+            "minInclusive",
+            "minExclusive"
+        ]
     },
+    /**
+     * byte is derived from short by setting the value of maxInclusive to be
+     * 127 and ·minInclusive· to be -128. The base type of byte is short.
+     * 
+     * byte has a lexical representation consisting of an optional sign
+     * followed by a finite-length sequence of decimal digits (#x30-#x39). If
+     * the sign is omitted, "+" is assumed. For example: -1, 0, 126, +100.
+     * 
+     * The canonical representation for byte is defined by prohibiting certain
+     * options from the Lexical representation (§3.3.19.1). Specifically, the
+     * optional "+" sign is prohibited and leading zeroes are prohibited.
+     */
     "byte" : {
-
+        "baseType" : "short",
+        "facets" : [
+            "totalDigits",
+            "fractionDigits",
+            "pattern",
+            "whiteSpace",
+            "enumeration",
+            "maxInclusive",
+            "maxExclusive",
+            "minInclusive",
+            "minExclusive"
+        ]
     },
+    /**
+     * nonNegativeInteger is derived from integer by setting the value of
+     * minInclusive to be 0. This results in the standard mathematical concept
+     * of the non-negative integers. The value space of nonNegativeInteger is
+     * the infinite set {0,1,2,...}. The base type of nonNegativeInteger is
+     * integer.
+     * 
+     * nonNegativeInteger has a lexical representation consisting of an
+     * optional sign followed by a finite-length sequence of decimal digits
+     * (#x30-#x39). If the sign is omitted, the positive sign ("+") is assumed.
+     * If the sign is present, it must be "+" except for lexical forms denoting
+     * zero, which may be preceded by a positive ("+") or a negative ("-")
+     * sign. For example: 1, 0, 12678967543233, +100000.
+     * 
+     * The canonical representation for nonNegativeInteger is defined by
+     * prohibiting certain options from the Lexical representation (§3.3.20.1).
+     * Specifically, the optional "+" sign is prohibited and leading zeroes are
+     * prohibited.
+     */
     "nonNegativeInteger" : {
-
+        "baseType" : "integer",
+        "facets" : [
+            "totalDigits",
+            "fractionDigits",
+            "pattern",
+            "whiteSpace",
+            "enumeration",
+            "maxInclusive",
+            "maxExclusive",
+            "minInclusive",
+            "minExclusive"
+        ]
     },
+    /**
+     * unsignedLong is derived from nonNegativeInteger by setting the value of
+     * maxInclusive to be 18446744073709551615. The base type of unsignedLong
+     * is nonNegativeInteger.
+     * 
+     * unsignedLong has a lexical representation consisting of a finite-length
+     * sequence of decimal digits (#x30-#x39). For example: 0, 12678967543233,
+     * 100000.
+     * 
+     * The canonical representation for unsignedLong is defined by prohibiting
+     * certain options from the Lexical representation (§3.3.21.1).
+     * Specifically, leading zeroes are prohibited.
+     */
     "unsignedLong" : {
-
+        "baseType" : "nonNegativeInteger",
+        "facets" : [
+            "totalDigits",
+            "fractionDigits",
+            "pattern",
+            "whiteSpace",
+            "enumeration",
+            "maxInclusive",
+            "maxExclusive",
+            "minInclusive",
+            "minExclusive"
+        ]
     },
+    /**
+     * unsignedInt is derived from unsignedLong by setting the value of
+     * maxInclusive to be 4294967295. The base type of unsignedInt is
+     * unsignedLong.
+     * 
+     * unsignedInt has a lexical representation consisting of a finite-length
+     * sequence of decimal digits (#x30-#x39). For example: 0, 1267896754,
+     * 100000.
+     * 
+     * The canonical representation for unsignedInt is defined by prohibiting
+     * certain options from the Lexical representation (§3.3.22.1).
+     * Specifically, leading zeroes are prohibited.
+     */
     "unsignedInt" : {
-        
+        "baseType" : "unsignedLong",
+        "facets" : [
+            "totalDigits",
+            "fractionDigits",
+            "pattern",
+            "whiteSpace",
+            "enumeration",
+            "maxInclusive",
+            "maxExclusive",
+            "minInclusive",
+            "minExclusive"
+        ]
     },
+    /**
+     * unsignedShort is derived from unsignedInt by setting the value of
+     * maxInclusive to be 65535. The base type of unsignedShort is unsignedInt.
+     * 
+     * unsignedShort has a lexical representation consisting of a finite-length
+     * sequence of decimal digits (#x30-#x39). For example: 0, 12678, 10000.
+     * 
+     * The canonical representation for unsignedShort is defined by prohibiting
+     * certain options from the Lexical representation (§3.3.23.1).
+     * Specifically, the leading zeroes are prohibited.
+     */
     "unsignedShort" : {
-
+        "baseType" : "unsignedInt",
+        "facets" : [
+            "totalDigits",
+            "fractionDigits",
+            "pattern",
+            "whiteSpace",
+            "enumeration",
+            "maxInclusive",
+            "maxExclusive",
+            "minInclusive",
+            "minExclusive"
+        ]
     },
+    /**
+     * unsignedByte is derived from unsignedShort by setting the value of
+     * maxInclusive to be 255. The base type of unsignedByte is unsignedShort.
+     * 
+     * unsignedByte has a lexical representation consisting of a finite-length
+     * sequence of decimal digits (#x30-#x39). For example: 0, 126, 100.
+     * 
+     * The canonical representation for unsignedByte is defined by prohibiting
+     * certain options from the Lexical representation (§3.3.24.1).
+     * Specifically, leading zeroes are prohibited.
+     */
     "unsignedByte" : {
-
+        "baseType" : "unsignedShort",
+        "facets" : [
+            "totalDigits",
+            "fractionDigits",
+            "pattern",
+            "whiteSpace",
+            "enumeration",
+            "maxInclusive",
+            "maxExclusive",
+            "minInclusive",
+            "minExclusive"
+        ]
     },
+    /**
+     * positiveInteger is derived from nonNegativeInteger by setting the value
+     * of minInclusive to be 1. This results in the standard mathematical
+     * concept of the positive integer numbers. The value space of
+     * positiveInteger is the infinite set {1,2,...}. The base type of
+     * positiveInteger is nonNegativeInteger.
+     * 
+     * positiveInteger has a lexical representation consisting of an optional
+     * positive sign ("+") followed by a finite-length sequence of decimal
+     * digits (#x30-#x39). For example: 1, 12678967543233, +100000.
+     * 
+     * The canonical representation for positiveInteger is defined by
+     * prohibiting certain options from the Lexical representation (§3.3.25.1).
+     * Specifically, the optional "+" sign is prohibited and leading zeroes are
+     * prohibited.
+     */
     "positiveInteger" : {
-
+        "baseType" : "nonNegativeInteger",
+        "facets" : [
+            "totalDigits",
+            "fractionDigits",
+            "pattern",
+            "whiteSpace",
+            "enumeration",
+            "maxInclusive",
+            "maxExclusive",
+            "minInclusive",
+            "minExclusive"
+        ]
     }
 };

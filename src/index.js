@@ -23,7 +23,12 @@ const CONST = require('./const')
 /**
  * For reading an XSD file
  */
-    , fs     = require('fs');
+    , fs     = require('fs')
+/**
+ * XSD data types
+ */
+    , types  = require('./dataTypes');
+;
 
 
 /**

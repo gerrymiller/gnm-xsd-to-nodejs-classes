@@ -4,6 +4,7 @@
 
 'use strict';
 
+const { exec } = require('child_process');
 const { start } = require('repl');
 
 /**
@@ -29,8 +30,12 @@ const CONST = require('./const')
 /**
  * XSD data types
  */
-    , types  = require('./dataTypes');
-;
+    , types  = require('./dataTypes')
+/**
+ * Exceptions
+ */
+    , exceptions  = require('./exceptions');    
+
 
 
 /**
@@ -56,76 +61,140 @@ module.exports = {
 
         if(!util.isEmptyString(options['schemaFile'])) {
             if(!util.isEmptyString(xmlString)) {
-                throw "Cannot specify both schemaURL and schemaFile";
+                throw new exceptions.Exception("Cannot specify both schemaURL and schemaFile");
             }
             xmlString = fs.readFileSync(options.schemaFile, {encoding:'utf8', flag:'r'});
         }
 
         if(util.isEmptyString(xmlString)) {
-            throw "Must specify either schemaURL or schemaFile";
+            throw new exceptions.Exception("Must specify either schemaURL or schemaFile");
         }
 
         let ns = options.namespaces || {};
         ns.xs = CONST.XML_SCHEMA_NS;
 
         let doc = new dom().parseFromString(xmlString);
-        let result = xpath.evaluate(
-            "/xs:schema/xs:element",
-            doc,
-            {
-                lookupNamespaceURI: (prefix) => {
-                    return ns[prefix] || null;
-                }
-            },
-            xpath.XPathResult.ANY_TYPE,
-            null
-        );
 
-        let classes = {};
-        let node = result.iterateNext();
-        while(node) {
-            // Get the node's "name" attribute
-            let name = node.getAttribute("name");
-            let type = util.stripXMLNamespace(node.getAttribute("type"));
-            if(util.isEmptyString(type)) {
-                // TODO: iterate over complex type and create an object (recursive)
-                type = parseComplexType(node, []);
-            }
-            classes[name] = {
-                "type" : type
-            };
-
-            // See if it has a "type" attribute
-
-            node = result.iterateNext();
+        let schema = {},
+            schemaNode,
+            result = executeXPathLookup(options, doc, "/xs:schema");
+        while(schemaNode = result.iterateNext()) {
+            processNode(options, schema, schemaNode);
         }
 
-        console.log(classes);
+        console.log(JSON.stringify(schema, null, 2));
 
         return true;
     }
 }
 
-function parseComplexType(startingNode, arr) {
-    // TODO: make iterative and use XPath
-    for(let i = 0; i < startingNode.childNodes.length; i++) {
-        let node = startingNode.childNodes[i];
-        if("complexType" === node.localName) {
-            for(let j = 0; j < node.childNodes.length; j++) {
-                let seqNode = node.childNodes[j];
-                if("sequence" === seqNode.localName) {
-                    for(let k = 0; k < seqNode.childNodes.length; k++) {
-                        let element = seqNode.childNodes[k];
-                        if("element" === element.localName) {
-                            let ref = element.getAttribute("ref");
-                            if(!util.isEmptyString(ref)) {
-                                arr.push(ref);
-                            }
-                        }
-                    }
-                }
-            }
+function processNode(options, obj, xmlNode, ignoreAttrs) {
+    addAllAttributes(options, obj, xmlNode, ignoreAttrs);
+
+    let preProcessor,
+        postProcessor,
+        nextIgnoreAttrs,
+        node,
+        objContext,
+        objKey,
+        result = executeXPathLookup(options, xmlNode, "child::*");
+
+    while(node = result.iterateNext()) {
+        let processorFunc = processors[node.localName];
+        if(processorFunc) {
+            preProcessor = processorFunc["pre"];
+            postProcessor = processorFunc["post"];
+            nextIgnoreAttrs = processorFunc["ignoreAttrs"];
+        }
+
+        if(preProcessor) {
+            objKey = preProcessor(options, obj, node);
+            objContext = {};
+        }
+        else {
+            objContext = obj;
+        }
+
+        processNode(options, objContext, node, nextIgnoreAttrs);
+
+        if(postProcessor)
+            postProcessor(options, objContext, node);
+
+        if(!util.isEmptyString(objKey)) {
+            obj[objKey] = objContext;
         }
     }
-    return arr;
+}
+
+let processors = {
+    /**
+     * pre          :   pre-processor (returns an objContext)
+     * post         :   post-processor
+     * ignoreAttrs  :   attributes to ignore
+     */
+    "element" : {
+        "pre" : (options, obj, node) => {
+            let name = node.getAttribute("name") || node.getAttribute("ref");
+            return name;
+        },
+        "ignoreAttrs" : [
+            "name",
+            "ref"
+        ]
+    },
+    "complexType" : {
+        "pre" : (options, obj, node) => {
+            return "type";
+        }
+    },
+    "extension" : {
+        "pre" : (options, obj, node) => {
+            // I don't think this works here
+            obj["base"] = node.getAttribute("base");
+            return "properties";
+        },
+        "ignoreAttrs" : [
+            "base"
+        ]
+    },
+    "attribute" : {
+        "pre" : (options, obj, node) => {
+            let name = node.getAttribute("ref") || node.getAttribute("name");
+            return name;
+        },
+        "ignoreAttrs" : [
+            "name",
+            "ref"
+        ]
+    }
+}
+
+function addAllAttributes(options, obj, doc, exceptions) {
+    let result = executeXPathLookup(options, doc, "attribute::*");
+    let node;
+    while(node = result.iterateNext()) {
+        if(!exceptions 
+            || !Array.isArray(exceptions) 
+            || !exceptions.includes(node.localName)) {
+
+                obj[node.localName] = node.nodeValue;
+        }
+    }
+}
+
+function executeXPathLookup(options, doc, query) {
+    let ns = options.namespaces || {};
+    ns.xs = CONST.XML_SCHEMA_NS;
+
+    return xpath.evaluate(
+        query,
+        doc,
+        {
+            lookupNamespaceURI: (prefix) => {
+                return ns[prefix] || null;
+            }
+        },
+        xpath.XPathResult.ANY_TYPE,
+        null
+    );
 }

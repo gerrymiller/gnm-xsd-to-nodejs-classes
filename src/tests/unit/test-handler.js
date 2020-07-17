@@ -25,7 +25,7 @@ describe('Test the entire library', async () => {
 
     it('reads an xsd', async () => {
         app.processSchema({
-            schemaFile: `${__dirname}/test.xsd`
+            schemaFile: `${__dirname}/fhir-all-xsd/fhir-single.xsd`
         });
     });
 });

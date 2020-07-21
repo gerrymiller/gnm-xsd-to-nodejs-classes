@@ -78,8 +78,9 @@ module.exports = {
         let schema = {},
             schemaNode,
             result = executeXPathLookup(options, doc, "/xs:schema");
+        schema["elements"] = {};
         while(schemaNode = result.iterateNext()) {
-            processNode(options, schema, schemaNode);
+            processNode(options, schema.elements, schemaNode);
         }
 
         console.log(JSON.stringify(schema, null, 2));
@@ -88,54 +89,56 @@ module.exports = {
     }
 }
 
+// TODO: Need to figure out if this is an object or an array
+//       - Maybe use count of siblingNodes?
 function processNode(options, obj, xmlNode, ignoreAttrs) {
     addAllAttributes(options, obj, xmlNode, ignoreAttrs);
 
     let preProcessor,
         postProcessor,
         nextIgnoreAttrs,
+        newObj,
+        newName = null,
         node,
-        objContext,
-        objKey,
         result = executeXPathLookup(options, xmlNode, "child::*");
 
     while(node = result.iterateNext()) {
         let processorFunc = processors[node.localName];
+
+
+        // I have to rethink this processor/postprocessor thing
+        //   More like I have to allow processorFuncs to process into a node
+
         if(processorFunc) {
             preProcessor = processorFunc["pre"];
             postProcessor = processorFunc["post"];
             nextIgnoreAttrs = processorFunc["ignoreAttrs"];
         }
 
-        if(preProcessor) {
-            objKey = preProcessor(options, obj, node);
-            objContext = {};
-        }
-        else {
-            objContext = obj;
-        }
+        if(preProcessor) 
+            newObj = preProcessor(options, obj, node);
 
-        processNode(options, objContext, node, nextIgnoreAttrs);
+        processNode(options, newObj ? newObj : obj, node, nextIgnoreAttrs);
 
         if(postProcessor)
-            postProcessor(options, objContext, node);
+            postProcessor(options, obj, node);
 
-        if(!util.isEmptyString(objKey)) {
-            obj[objKey] = objContext;
-        }
     }
+
+    return obj;
 }
 
 let processors = {
     /**
-     * pre          :   pre-processor (returns an objContext)
+     * pre          :   pre-processor
      * post         :   post-processor
      * ignoreAttrs  :   attributes to ignore
      */
     "element" : {
         "pre" : (options, obj, node) => {
             let name = node.getAttribute("name") || node.getAttribute("ref");
-            return name;
+            obj[name] = {};
+            return obj[name];
         },
         "ignoreAttrs" : [
             "name",
@@ -144,14 +147,32 @@ let processors = {
     },
     "complexType" : {
         "pre" : (options, obj, node) => {
-            return "type";
-        }
+            let name = node.getAttribute("name") || node.getAttribute("ref");
+            obj[name] = {};
+            return obj[name];
+        },
+        "ignoreAttrs" : [
+            "name",
+            "ref"
+        ]
+    },
+    "simpleType" : {
+        "pre" : (options, obj, node) => {
+            let name = node.getAttribute("name") || node.getAttribute("ref");
+            obj[name] = {};
+            return obj[name];
+        },
+        "ignoreAttrs" : [
+            "name",
+            "ref"
+        ]
     },
     "extension" : {
         "pre" : (options, obj, node) => {
             // I don't think this works here
             obj["base"] = node.getAttribute("base");
-            return "properties";
+            obj["properties"] = {};
+            return obj.properties;
         },
         "ignoreAttrs" : [
             "base"
@@ -160,12 +181,20 @@ let processors = {
     "attribute" : {
         "pre" : (options, obj, node) => {
             let name = node.getAttribute("ref") || node.getAttribute("name");
-            return name;
+            obj[name] = {};
+            return obj[name];
         },
         "ignoreAttrs" : [
             "name",
             "ref"
         ]
+    },
+    "documentation" : {
+        "pre" : (options, obj, node) => {
+            if(node.childNodes.length > 0)
+                obj["comment"] = node.childNodes[0].nodeValue;
+            return obj;
+        }
     }
 }
 
@@ -177,6 +206,7 @@ function addAllAttributes(options, obj, doc, exceptions) {
             || !Array.isArray(exceptions) 
             || !exceptions.includes(node.localName)) {
 
+                //console.log(node);
                 obj[node.localName] = node.nodeValue;
         }
     }

@@ -37,5 +37,26 @@ module.exports = {
      */
     stripXMLNamespace : (x) => {
         return x.substr(x.lastIndexOf(":") + 1);
+    },
+
+    /**
+     * Counts the number of XML siblings of a given set of node types
+     * @param {String} node - an XML node
+     * @param {number || array of numbers} types - a set of nodetypes to filter on
+     * @returns {number} - the total number of siblings matching the specified types, inclusive of node
+     */
+    countSiblingNodes : (node, types) => {
+        let count = 0;
+
+        for(let i = 0; i < node.parentNode.childNodes.length; i++) {
+            if((Array.isArray(types) 
+                && types.includes(node.parentNode.childNodes[i].nodeType))
+                || node.parentNode.childNodes[i].nodeType === types) {
+
+                    count++;
+            }
+        }
+
+        return count;
     }
 };

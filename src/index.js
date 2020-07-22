@@ -4,39 +4,42 @@
 
 'use strict';
 
-const { exec } = require('child_process');
-const { start } = require('repl');
-
 /**
  * Reference to the CONSTANTS module
  */
-const CONST = require('./const')
+const CONST         = require('./const')
 /**
  * Used for XPath queries into the XML XSD schema file
  */
-    , xpath = require('xpath')
+    , xpath         = require('xpath')
 /**
  * Required to parse XML DOC of the XSD
  */
-    , dom   = require('xmldom').DOMParser
+    , dom           = require('xmldom').DOMParser
 /**
  * Utilities module
  */
-    , util   = require('./util')
+    , util          = require('./util')
 /**
  * For reading an XSD file
  */
-    , fs     = require('fs')
+    , fs            = require('fs')
 /**
  * XSD data types
  */
-    , types  = require('./dataTypes')
+    , types         = require('./dataTypes')
 /**
  * Exceptions
  */
-    , exceptions  = require('./exceptions');    
-
-
+    , exceptions    = require('./exceptions')
+/**
+ * Hygen - used for generating code files
+ */
+    , hygen         = require('hygen')
+/**
+ * Logger - hygen Logger
+ */
+    , Logger            = require('hygen/lib/logger');
 
 /**
  * @typedef {Object} processSchema~options
@@ -84,13 +87,30 @@ module.exports = {
         }
 
         console.log(JSON.stringify(schema, null, 2));
-
+        generateClasses(options, schema.elements);
         return true;
     }
 }
 
-// TODO: Need to figure out if this is an object or an array
-//       - Maybe use count of siblingNodes?
+// TODO: fill out options with things like target directory, etc.
+function generateClasses(options, elements) {
+    console.log("Creating classes");
+
+    for(let prop in elements) {
+        hygen.runner([`generator`, `xsd-to-nodejs`, `--name`, `${prop}`], {
+            //templates: defaultTemplates,
+            cwd: process.cwd(),
+            logger: new Logger(console.log.bind(console)),
+            createPrompter: () => require('enquirer'),
+            exec: (action, body) => {
+                const opts = body && body.length > 0 ? { input: body } : {}
+                return require('execa').shell(action, opts)
+            },
+            debug: !!process.env.DEBUG
+        });
+    }
+}
+
 function processNode(options, obj, xmlNode, ignoreAttrs) {
     addAllAttributes(options, obj, xmlNode, ignoreAttrs);
 

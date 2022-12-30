@@ -22,8 +22,8 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "gulp": "^4.0.2",
-    "gulp-mocha": "^7.0.2",
-    "mocha": "^8.0.1"
+    "gulp-mocha": "^8.0.0",
+    "mocha": "^8.4.0"
   },
   "dependencies": {
     "xmldom": "^0.3.0",
